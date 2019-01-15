@@ -55,6 +55,9 @@ class AudioPlayer {
   /// This enables more verbose logging, if desired.
   static bool logEnabled = false;
 
+  StreamController<Duration> _positionController =
+      new StreamController.broadcast();
+
   AudioPlayerState _audioPlayerState = null;
 
   AudioPlayerState get state => _audioPlayerState;
@@ -69,8 +72,8 @@ class AudioPlayer {
   /// This handler returns the duration of the file, when it's available (it might take a while because it's being downloaded or buffered).
   TimeChangeHandler durationHandler;
 
-  /// This handler updates the current position of the audio. You can use it to make a progress bar, for instance.
-  TimeChangeHandler positionHandler;
+  /// This stream broadcasts the current position of the audio. You can use it to make a progress bar, for instance.
+  Stream<Duration> get onPositionChange => _positionController.stream;
 
   AudioPlayerStateChangeHandler audioPlayerStateChangeHandler;
 
@@ -201,8 +204,8 @@ class AudioPlayer {
         }
         break;
       case 'audio.onCurrentPosition':
-        if (player.positionHandler != null) {
-          player.positionHandler(new Duration(milliseconds: value));
+        if (player._positionController.hasListener) {
+          player._positionController.add(new Duration(milliseconds: value));
         }
         break;
       case 'audio.onComplete':
